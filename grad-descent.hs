@@ -20,7 +20,7 @@ main = do
             filename <- case args of
                 [f] -> return (f)
                 _ -> do
-                        die $ "Usage: wordFreq <filename>"
+                        die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
             sequence_ $ fmap (putStrLn . show) (csvData)
 
