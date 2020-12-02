@@ -23,7 +23,6 @@ main = do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
             print $ descend csvData [(0.9::Double),(0.1::Double)] (5::Int) (0.01::Double)
-            --sequence_ $ fmap (putStrLn . show) (computeGrad (csvData) [0,0])
 
 --Actual gradient descent algorithm
 descend :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
@@ -34,21 +33,28 @@ descend csvData guess steps stepSize
 
 --Compute the gradient
 computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
-computeGrad csvData params stepSize = fmap (* stepSize) $ specialMegaFold (fmap (computeGradRow (head params) (last params)) csvData)
+computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (computeGradRow params) csvData)
 
---Compute a row of gradient (single variable)
-computeGradRow :: Num a => a -> a -> [a] -> [a]
-computeGradRow beta_0 beta_1 dataList = [(gradInt beta_0 beta_1 dataList),(gradSlope beta_0 beta_1 dataList)]
+--Compute a row of gradient
+computeGradRow :: Num a => [a] -> [a] -> [a]
+computeGradRow params dataList = computeGradRowHelper 0 params dataList
 
---Gradient function with respect to intercept (single variable)
-gradInt :: Num a => a -> a -> [a] -> a
-gradInt beta0 beta1 dataList = -2 * ((head dataList) - beta0 - (beta1 * (last dataList)))
+--Helper function to compute row of gradient
+computeGradRowHelper :: Num a => Int -> [a] -> [a] -> [a]
+computeGradRowHelper n params dataList
+    | n == (length dataList) = []
+    | n == 0 = [(gradIntLSRL params dataList)] ++ (computeGradRowHelper (n+1) params dataList)
+    | otherwise = [(gradSlopeLSRL params dataList n)] ++ (computeGradRowHelper (n+1) params dataList)
 
---Gradient function with respect to slope (single variable)
-gradSlope :: Num a => a -> a -> [a] -> a
-gradSlope beta0 beta1 dataList = -2 * ((head dataList) - beta0 - (beta1 * (last dataList))) * (-1 * (last dataList))
+--Gradient function with respect to intercept
+gradIntLSRL :: Num a => [a] -> [a] -> a
+gradIntLSRL params dataList = -2 * ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList))))
 
---Creates the 'dataframe' structure - feel free to change
+--Gradient function with respect to slope
+gradSlopeLSRL :: Num a => [a] -> [a] -> Int -> a
+gradSlopeLSRL params dataList var = -2 * ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) * (-1 * (dataList !! var))
+
+--Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
 getCSVData :: FilePath -> IO [[Double]]
 getCSVData filename = do
                         lns <- fmap lines (readFile filename)
