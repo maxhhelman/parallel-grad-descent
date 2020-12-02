@@ -54,12 +54,6 @@ gradIntLSRL params dataList = -2 * ((head dataList) - (head params) - (sum (zipW
 gradSlopeLSRL :: Num a => [a] -> [a] -> Int -> a
 gradSlopeLSRL params dataList var = -2 * ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) * (-1 * (dataList !! var))
 
---Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
-getCSVData :: FilePath -> IO [[Double]]
-getCSVData filename = do
-                        lns <- fmap lines (readFile filename)
-                        return $ map (map (\x -> read x::Double)) (map words (map rep (tail lns)))
-
 --Applies a fold to each column in the dataframe
 specialMegaFold :: Num c => [[c]] -> [c]
 specialMegaFold [] = error "specialMegaFold not long enough"
@@ -67,6 +61,12 @@ specialMegaFold [_] = error "specialMegaFold not long enough"
 specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
+
+--Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
+getCSVData :: FilePath -> IO [[Double]]
+getCSVData filename = do
+                        lns <- fmap lines (readFile filename)
+                        return $ map (map (\x -> read x::Double)) (map words (map rep (tail lns)))
 
 --Preprocessing for CSV files (turns all commas into spaces so we can use words)
 rep :: [Char] -> [Char]
