@@ -59,7 +59,7 @@ gradSlopeLSRL params dataList var = -2 *
 --Applies a fold to each column in the dataframe
 specialMegaFold :: Num c => [[c]] -> [c]
 specialMegaFold [] = error "specialMegaFold not long enough"
-specialMegaFold [_] = error "specialMegaFold not long enough"
+specialMegaFold [x] = x
 specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
