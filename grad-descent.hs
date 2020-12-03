@@ -22,14 +22,15 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            print $ descend csvData [(0.9::Double),(0.1::Double)] (5::Int) (0.01::Double)
+            --Note: you always need to guess something larger than the actual values
+            print $ descend csvData [(50000::Double),(50000::Double)] (100::Int) (0.1::Double)
 
 --Actual gradient descent algorithm
 descend :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
 descend csvData guess steps stepSize
     | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descend (csvData) (zipWith (+) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
+    | otherwise = descend (csvData) (zipWith (-) guess (map abs (computeGrad csvData guess stepSize))) (steps - 1) (stepSize)
 
 --Compute the gradient
 computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
