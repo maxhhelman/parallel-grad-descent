@@ -22,20 +22,21 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            print $ descend csvData [0,1.1] 50 0.1
+            print $ descend csvData [(0.9::Double),(0.1::Double)] (5::Int) (0.01::Double)
 
 --Actual gradient descent algorithm
+descend :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
 descend csvData guess steps stepSize
-    | steps < 0 = error "you can't have negative steps"
+    | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descend csvData (zipWith (+) guess (grad)) (steps - 1) stepSize
-    where 
-        grad = computeGrad csvData guess stepSize
+    | otherwise = descend (csvData) (zipWith (+) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
 
 --Compute the gradient
+computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
 computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (computeGradRow params) csvData)
 
 --Compute a row of gradient
+computeGradRow :: Num a => [a] -> [a] -> [a]
 computeGradRow params dataList = computeGradRowHelper 0 params dataList
 
 --Helper function to compute row of gradient
@@ -58,6 +59,7 @@ gradSlopeLSRL params dataList var = -2 *
 --Applies a fold to each column in the dataframe
 specialMegaFold :: Num c => [[c]] -> [c]
 specialMegaFold [] = error "specialMegaFold not long enough"
+specialMegaFold [x] = x
 specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
