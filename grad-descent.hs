@@ -52,7 +52,9 @@ gradIntLSRL params dataList = -2 * ((head dataList) - (head params) - (sum (zipW
 
 --Gradient function with respect to slope
 gradSlopeLSRL :: Num a => [a] -> [a] -> Int -> a
-gradSlopeLSRL params dataList var = -2 * ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) * (-1 * (dataList !! var))
+gradSlopeLSRL params dataList var = -2 *
+                                    ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) *
+                                    (-1 * (dataList !! var))
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: Num c => [[c]] -> [c]
