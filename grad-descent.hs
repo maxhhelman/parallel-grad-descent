@@ -22,15 +22,14 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            --Note: you always need to guess something larger than the actual values
-            print $ descend csvData [(50000::Double),(50000::Double)] (100::Int) (0.1::Double)
+            print $ descend csvData [(0::Double),(0::Double)] (100::Int) (0.1::Double)
 
 --Actual gradient descent algorithm
 descend :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
 descend csvData guess steps stepSize
     | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descend (csvData) (zipWith (-) guess (map abs (computeGrad csvData guess stepSize))) (steps - 1) (stepSize)
+    | otherwise = descend (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
 
 --Compute the gradient
 computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
@@ -49,11 +48,11 @@ computeGradRowHelper n params dataList
 
 --Gradient function with respect to intercept
 gradIntLSRL :: Num a => [a] -> [a] -> a
-gradIntLSRL params dataList = -2 * ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList))))
+gradIntLSRL params dataList = -2 * ((head dataList) - ((head params) + (sum (zipWith (*) (tail params) (tail dataList)))))
 
 --Gradient function with respect to slope
 gradSlopeLSRL :: Num a => [a] -> [a] -> Int -> a
-gradSlopeLSRL params dataList var = -2 *
+gradSlopeLSRL params dataList var = 2 *
                                     ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) *
                                     (-1 * (dataList !! var))
 
