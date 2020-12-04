@@ -22,14 +22,24 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            print $ descend csvData [(0::Double),(0::Double)] (100::Int) (0.1::Double)
+            print $ descendSteps csvData [(0::Double),(0::Double)] (1000::Int) (0.1::Double)
+            print $ descendTolerance csvData [(0::Double),(0::Double)] (0.00001::Double) (0.1::Double)
 
---Actual gradient descent algorithm
-descend :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
-descend csvData guess steps stepSize
+--Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
+descendTolerance :: [[Double]] -> [Double] -> Double -> Double -> [Double]
+descendTolerance csvData guess tolerance stepSize
+    | tolerance <= (0::Double) = error "tolerance must be a positive value"
+    | maxVal <= tolerance = guess
+    | otherwise = descendTolerance (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) tolerance stepSize
+    where
+        maxVal = maximum $ map abs (computeGrad csvData guess 1)
+
+--Actual gradient descent algorithm (uses numer of steps as stopping condition)
+descendSteps :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
+descendSteps csvData guess steps stepSize
     | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descend (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
+    | otherwise = descendSteps (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
 
 --Compute the gradient
 computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
