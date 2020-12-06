@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: a79a4f97e8ce659ffd8b0fbea1846dcce517d8de0ade1edd3070f9f654656474
+
+name:           parallel-gradient-descent
+version:        0.1.0.0
+description:    Please see the README on GitHub at https://github.com/maxhhelman/parallel-grad-descent/#readme
+homepage:       https://github.com/maxhhelman/parallel-grad-descent#readme
+bug-reports:    https://github.com/maxhhelman/parallel-grad-descent/issues
+author:         Riya Chakraborty and Max Helman
+maintainer:     rc3242@columbia.edu
+copyright:      2020 Max Helman - Riya Chakraborty
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/maxhhelman/parallel-grad-descent
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_parallel_gradient_descent
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable parallel-gradient-descent-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_parallel_gradient_descent
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , parallel-gradient-descent
+  default-language: Haskell2010
+
+test-suite parallel-gradient-descent-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_parallel_gradient_descent
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , parallel-gradient-descent
+  default-language: Haskell2010

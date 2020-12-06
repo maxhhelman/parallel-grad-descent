@@ -1,0 +1,50 @@
+name:                parallel-gradient-descent
+version:             0.1.0.0
+github:              "maxhhelman/parallel-grad-descent"
+license:             BSD3
+author:              "Riya Chakraborty and Max Helman"
+maintainer:          "rc3242@columbia.edu"
+copyright:           "2020 Max Helman - Riya Chakraborty"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at https://github.com/maxhhelman/parallel-grad-descent/#readme
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  parallel-gradient-descent-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - parallel-gradient-descent
+
+tests:
+  parallel-gradient-descent-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -Wall
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - parallel-gradient-descent
