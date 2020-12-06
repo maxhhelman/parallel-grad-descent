@@ -1,3 +1,7 @@
+module Main where
+
+-- to be created
+import Lib
 import System.Environment(getArgs)
 import System.Exit(die)
 
@@ -49,6 +53,7 @@ computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (
 computeGradRow :: Num a => [a] -> [a] -> [a]
 computeGradRow params dataList = computeGradRowHelper 0 params dataList
 
+
 --Helper function to compute row of gradient
 computeGradRowHelper :: Num a => Int -> [a] -> [a] -> [a]
 computeGradRowHelper n params dataList
@@ -86,3 +91,8 @@ rep [] = []
 rep (x:xs)
     | x == ',' = [' '] ++ (rep xs)
     | otherwise = [x] ++ (rep xs)
+
+
+
+
+
