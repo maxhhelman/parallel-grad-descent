@@ -90,8 +90,3 @@ rep [] = []
 rep (x:xs)
     | x == ',' = [' '] ++ (rep xs)
     | otherwise = [x] ++ (rep xs)
-
-
-
-
-
