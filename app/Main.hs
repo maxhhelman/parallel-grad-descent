@@ -4,7 +4,6 @@ module Main where
 import Lib
 import System.Environment(getArgs)
 import System.Exit(die)
-import Debug.Trace
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -33,11 +32,11 @@ main = do
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
 descendTolerance :: [[Double]] -> [Double] -> Double -> Double -> [Double]
 descendTolerance csvData guess tolerance stepSize
-    | tolerance < (0::Double) = error "tolerance must be a positive value"
+    | tolerance <= (0::Double) = error "tolerance must be a positive value"
     | maxVal <= tolerance = guess
-    | otherwise = descendTolerance (csvData) (traceShowId (zipWith (-) guess (computeGrad csvData guess stepSize))) tolerance stepSize
+    | otherwise = descendTolerance (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) tolerance stepSize
     where
-        maxVal = (maximum $ map abs (computeGrad csvData guess 0.001))
+        maxVal = maximum $ map abs (computeGrad csvData guess stepSize)
 
 --Actual gradient descent algorithm (uses numer of steps as stopping condition)
 descendSteps :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
