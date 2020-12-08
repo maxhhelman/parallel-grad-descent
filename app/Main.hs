@@ -4,7 +4,6 @@ module Main where
 import Lib
 import System.Environment(getArgs)
 import System.Exit(die)
-import Debug.Trace
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -37,8 +36,7 @@ descendTolerance csvData guess tolerance stepSize
     | maxVal <= tolerance = guess
     | otherwise = descendTolerance (csvData) (traceShowId (zipWith (-) guess (computeGrad csvData guess stepSize))) tolerance stepSize
     where
-        maxVal = (maximum $ map abs (computeGrad csvData guess 0.001))
-
+        maxVal = maximum $ map abs (computeGrad csvData guess stepSize)
 
 --Actual gradient descent algorithm (uses numer of steps as stopping condition)
 descendSteps :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
@@ -54,7 +52,6 @@ computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (
 --Compute a row of gradient
 computeGradRow :: Num a => [a] -> [a] -> [a]
 computeGradRow params dataList = computeGradRowHelper 0 params dataList
-
 
 --Helper function to compute row of gradient
 computeGradRowHelper :: Num a => Int -> [a] -> [a] -> [a]
@@ -93,8 +90,3 @@ rep [] = []
 rep (x:xs)
     | x == ',' = [' '] ++ (rep xs)
     | otherwise = [x] ++ (rep xs)
-
-
-
-
-
