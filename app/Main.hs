@@ -27,8 +27,8 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            print $ descendSteps csvData [(5.1::Double),(0.1::Double),(1.1::Double)] (10000::Int) (0.001::Double)
-            print $ descendTolerance csvData [(0.2::Double),(0.2::Double),(1.0::Double)] (0.00001::Double) (0.001::Double)
+            print $ descendSteps csvData [(0.0::Double),(0.0::Double),(0.0::Double)] (10000::Int) (0.001::Double)
+            print $ descendTolerance csvData [(0.0::Double),(0.0::Double),(0.0::Double)] (0.00001::Double) (0.001::Double)
 
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
 descendTolerance :: [[Double]] -> [Double] -> Double -> Double -> [Double]
@@ -38,7 +38,6 @@ descendTolerance csvData guess tolerance stepSize
     | otherwise = descendTolerance (csvData) (traceShowId (zipWith (-) guess (computeGrad csvData guess stepSize))) tolerance stepSize
     where
         maxVal = (maximum $ map abs (computeGrad csvData guess 0.001))
-
 
 --Actual gradient descent algorithm (uses numer of steps as stopping condition)
 descendSteps :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
@@ -54,7 +53,6 @@ computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (
 --Compute a row of gradient
 computeGradRow :: Num a => [a] -> [a] -> [a]
 computeGradRow params dataList = computeGradRowHelper 0 params dataList
-
 
 --Helper function to compute row of gradient
 computeGradRowHelper :: Num a => Int -> [a] -> [a] -> [a]
