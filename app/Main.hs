@@ -34,7 +34,7 @@ descendTolerance :: [[Double]] -> [Double] -> Double -> Double -> [Double]
 descendTolerance csvData guess tolerance stepSize
     | tolerance < (0::Double) = error "tolerance must be a positive value"
     | maxVal <= tolerance = guess
-    | otherwise = descendTolerance (csvData) (traceShowId (zipWith (-) guess (computeGrad csvData guess stepSize))) tolerance stepSize
+    | otherwise = descendTolerance (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) tolerance stepSize
     where
         maxVal = maximum $ map abs (computeGrad csvData guess stepSize)
 
