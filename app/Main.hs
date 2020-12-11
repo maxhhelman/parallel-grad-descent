@@ -1,7 +1,7 @@
 module Main where
 
 -- to be created
-import Lib
+import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
 import Data.List(isInfixOf)
