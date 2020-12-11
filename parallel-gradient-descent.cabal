@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a79a4f97e8ce659ffd8b0fbea1846dcce517d8de0ade1edd3070f9f654656474
+-- hash: f16ca38e929e8a36b9ad80196185bb02f368c2786246953ed0366efb56cd8bd7
 
 name:           parallel-gradient-descent
 version:        0.1.0.0
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Grad
   other-modules:
       Paths_parallel_gradient_descent
   hs-source-dirs:
