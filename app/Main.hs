@@ -73,7 +73,9 @@ gradSlopeLinear params dataList var = -2 *
 
 --Compute a row of the gradient in a logistic function
 computeGradRowLogistic :: [Double] -> [Double] -> [Double]
-computeGradRowLogistic params dataList =  [(hTheta params dataList) - (head dataList)] ++ (tail (zipWith (*) dataList (map (subtract (head dataList)) (take (length dataList) (cycle [hTheta params dataList])))))
+computeGradRowLogistic params dataList = [(hTheta params dataList) - (head dataList)] 
+                                        ++ (tail (zipWith (*) dataList (map (subtract (head dataList)) 
+                                        (take (length dataList) (cycle [hTheta params dataList])))))
 
 --Compute loss function exponential (needed for derivatives)
 hTheta :: [Double] -> [Double] -> Double
