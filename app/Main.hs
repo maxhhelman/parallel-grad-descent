@@ -44,7 +44,7 @@ main = do
 --            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
 
 
--- If we add more loss functions later, we could have this structure
+--If we add more loss functions later, we could have this structure
 computeGradDecider :: Bool -> Bool -> ([Double] -> [Double] -> [Double])
 computeGradDecider linOutcome logOutcome
     | linOutcome = computeGradRowLinear
