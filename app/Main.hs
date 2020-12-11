@@ -26,49 +26,64 @@ main = do
                 _ -> do
                         die $ "Usage: grad-descent <filename>"
             csvData <- getCSVData filename
-            print $ descendSteps csvData [(5.1::Double),(0.1::Double),(1.1::Double)] (10000::Int) (0.001::Double)
-            print $ descendTolerance csvData [(0.2::Double),(0.2::Double),(1.0::Double)] (0.00001::Double) (0.001::Double)
+            print $ descendSteps csvData computeGradRowLinear [(5.1::Double),(0.1::Double),(1.1::Double)] (10000::Int) (0.001::Double)
+            print $ descendTolerance csvData computeGradRowLinear [(0.2::Double),(0.2::Double),(1.0::Double)] (0.00001::Double) (0.001::Double)
+            print $ descendSteps csvData computeGradRowLogistic [(0.0::Double),(0.0::Double)] (10000::Int) (0.001::Double)
 
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
-descendTolerance :: [[Double]] -> [Double] -> Double -> Double -> [Double]
-descendTolerance csvData guess tolerance stepSize
+descendTolerance :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
+descendTolerance csvData gradFunc guess tolerance stepSize
     | tolerance < (0::Double) = error "tolerance must be a positive value"
     | maxVal <= tolerance = guess
-    | otherwise = descendTolerance (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) tolerance stepSize
+    | otherwise = descendTolerance (csvData) gradFunc (zipWith (-) guess (computeGrad csvData gradFunc guess stepSize)) tolerance stepSize
     where
-        maxVal = maximum $ map abs (computeGrad csvData guess stepSize)
+        maxVal = maximum $ map abs (computeGrad csvData gradFunc guess stepSize)
 
 --Actual gradient descent algorithm (uses numer of steps as stopping condition)
-descendSteps :: (Ord t1, Num t1, Num t2) => [[t2]] -> [t2] -> t1 -> t2 -> [t2]
-descendSteps csvData guess steps stepSize
+descendSteps :: (Ord t1, Num t1, Num t2) => [a] -> ([t2] -> a -> [t2]) -> [t2] -> t1 -> t2 -> [t2]
+descendSteps csvData gradFunc guess steps stepSize
     | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descendSteps (csvData) (zipWith (-) guess (computeGrad csvData guess stepSize)) (steps - 1) (stepSize)
+    | otherwise = descendSteps (csvData) gradFunc (zipWith (-) guess (computeGrad csvData gradFunc guess stepSize)) (steps - 1) (stepSize)
 
 --Compute the gradient
-computeGrad :: Num b => [[b]] -> [b] -> b -> [b]
-computeGrad csvData params stepSize = map (* stepSize) $ specialMegaFold (fmap (computeGradRow params) csvData)
+computeGrad :: Num b => [a] -> (t -> a -> [b]) -> t -> b -> [b]
+computeGrad csvData gradFunc params stepSize = map (* stepSize) $ specialMegaFold (fmap (gradFunc params) csvData)
 
 --Compute a row of gradient
-computeGradRow :: Num a => [a] -> [a] -> [a]
-computeGradRow params dataList = computeGradRowHelper 0 params dataList
+computeGradRowLinear :: Num a => [a] -> [a] -> [a]
+computeGradRowLinear params dataList = computeGradRowLinearHelper 0 params dataList
 
 --Helper function to compute row of gradient
-computeGradRowHelper :: Num a => Int -> [a] -> [a] -> [a]
-computeGradRowHelper n params dataList
+computeGradRowLinearHelper :: Num a => Int -> [a] -> [a] -> [a]
+computeGradRowLinearHelper n params dataList
     | n == (length dataList) = []
-    | n == 0 = [(gradIntLSRL params dataList)] ++ (computeGradRowHelper (n+1) params dataList)
-    | otherwise = [(gradSlopeLSRL params dataList n)] ++ (computeGradRowHelper (n+1) params dataList)
+    | n == 0 = [(gradIntLinear params dataList)] ++ (computeGradRowLinearHelper (n+1) params dataList)
+    | otherwise = [(gradSlopeLinear params dataList n)] ++ (computeGradRowLinearHelper (n+1) params dataList)
 
---Gradient function with respect to intercept
-gradIntLSRL :: Num a => [a] -> [a] -> a
-gradIntLSRL params dataList = -2 * ((head dataList) - ((head params) + (sum (zipWith (*) (tail params) (tail dataList)))))
+--Linear gradient function with respect to intercept
+gradIntLinear :: Num a => [a] -> [a] -> a
+gradIntLinear params dataList = -2 * ((head dataList) - ((head params) + (sum (zipWith (*) (tail params) (tail dataList)))))
 
---Gradient function with respect to slope
-gradSlopeLSRL :: Num a => [a] -> [a] -> Int -> a
-gradSlopeLSRL params dataList var = -2 *
+--Linear gradient function with respect to slope
+gradSlopeLinear :: Num a => [a] -> [a] -> Int -> a
+gradSlopeLinear params dataList var = -2 *
                                     ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) *
                                     (dataList !! var)
+
+--Compute a row of the gradient in a logistic function
+computeGradRowLogistic :: [Double] -> [Double] -> [Double]
+computeGradRowLogistic params dataList = [(hTheta params dataList) - (head dataList)] 
+                                        ++ (tail (zipWith (*) dataList (map (subtract (head dataList)) 
+                                        (take (length dataList) (cycle [hTheta params dataList])))))
+
+--Compute loss function exponential (needed for derivatives)
+hTheta :: [Double] -> [Double] -> Double
+hTheta params dataList = (/) 1.0 $ 1.0 + (exp (-1 * (g params dataList)))
+
+--Compute exponential in denominator of logistic function
+g :: [Double] -> [Double] -> Double
+g params dataList = sum $ zipWith (*) params ([1.0::Double] ++ (tail dataList))
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: Num c => [[c]] -> [c]
