@@ -4,6 +4,7 @@ module Main where
 import Lib
 import System.Environment(getArgs)
 import System.Exit(die)
+import Data.List(isInfixOf)
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -18,17 +19,38 @@ Portability :  portable | non-portable (<reason>)
 <module description starting at first column>
 -}
 
-main :: IO ()
+main :: IO()
 main = do
             args <- getArgs
-            filename <- case args of
-                [f] -> return (f)
+            input <- case args of
+                [f, method, guess] -> return [f, method, guess]
                 _ -> do
-                        die $ "Usage: grad-descent <filename>"
-            csvData <- getCSVData filename
-            print $ descendSteps csvData computeGradRowLinear [(5.1::Double),(0.1::Double),(1.1::Double)] (10000::Int) (0.001::Double)
-            print $ descendTolerance csvData computeGradRowLinear [(0.2::Double),(0.2::Double),(1.0::Double)] (0.00001::Double) (0.001::Double)
-            print $ descendSteps csvData computeGradRowLogistic [(0.0::Double),(0.0::Double)] (10000::Int) (0.001::Double)
+                        die $ "Usage: grad-descent <filename> <loss function: linear/logistic> <guess array>"
+            csvData <- getCSVData (head input)
+
+            let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Line", "Linear", "line", "linear"])
+            let logMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Log", "Logistic", "log", "logistic"])
+
+            appLoss <- case (linMatch || logMatch) of
+                 True -> if linMatch then (return computeGradRowLinear) else (return computeGradRowLogistic)
+                 False -> do
+                            die $ "Choose either Linear or Logistic loss functions"
+
+            let guess = read (head $ tail $ tail input) :: [Double]
+
+--            print $ descendTolerance csvData computeGradRowLogistic [5.1,0.1,1.1] (0.00001) (0.001::Double)
+            print $ descendTolerance csvData appLoss guess (0.00001::Double) (0.001::Double)
+--            print $ descendTolerance csvData computeGradRowLogistic [0.0,0.0] (0.001) (0.0001)
+--            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
+
+
+-- If we add more loss functions later, we could have this structure
+computeGradDecider :: Bool -> Bool -> ([Double] -> [Double] -> [Double])
+computeGradDecider linOutcome logOutcome
+    | linOutcome = computeGradRowLinear
+    | logOutcome = computeGradRowLogistic
+    | otherwise = computeGradRowLogistic
+
 
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
 descendTolerance :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
