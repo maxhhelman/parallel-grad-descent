@@ -86,17 +86,16 @@ specialMegaFold xx@(x:xs:xss)
 parallelMegaFold :: [[Double]] -> [Double]
 parallelMegaFold [] = error "parallelMegaFold not long enough"
 parallelMegaFold [x] = x
-parallelMegaFold nested@(x:xs:xss) = practiceParallel nested
+parallelMegaFold nested@(x:xs:xss) = parallelComputeSum nested
 
-practiceParallel :: [[Double]] -> [Double]
-practiceParallel nested@(x:xs:xss) = do
+parallelComputeSum :: [[Double]] -> [Double]
+parallelComputeSum nested@(x:xs:xss) = do
                     let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
                     let xTranspose = transpose2D x
-                    let [openZZ] = computeP xTranspose :: [Array U DIM2 Double]
---                    newZZ <- openZZ 
-                    let finally = foldP (+) 0 openZZ
-                    moo <- finally
-                    toList moo
+                    let [xNDTranspose] = computeP xTranspose :: [Array U DIM2 Double]
+                    let mResult = foldP (+) 0 xNDTranspose
+                    result <- mResult
+                    toList result
 
 
 transpose2D :: (Source r e) => Array r DIM2 e -> Array D DIM2 e
