@@ -72,7 +72,7 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) $ specialMegaFold (fmap (gradFunc params) csvData)
+computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (fmap (gradFunc params) csvData)
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
