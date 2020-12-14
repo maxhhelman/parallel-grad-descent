@@ -9,22 +9,22 @@ module Grad
     ) where
 
 --Compute a row of gradient
-computeGradRowLinear :: Num a => [a] -> [a] -> [a]
+computeGradRowLinear :: [Double] -> [Double] -> [Double]
 computeGradRowLinear params dataList = computeGradRowLinearHelper 0 params dataList
 
 --Helper function to compute row of gradient
-computeGradRowLinearHelper :: Num a => Int -> [a] -> [a] -> [a]
+computeGradRowLinearHelper :: Int -> [Double] -> [Double] -> [Double]
 computeGradRowLinearHelper n params dataList
     | n == (length dataList) = []
     | n == 0 = [(gradIntLinear params dataList)] ++ (computeGradRowLinearHelper (n+1) params dataList)
     | otherwise = [(gradSlopeLinear params dataList n)] ++ (computeGradRowLinearHelper (n+1) params dataList)
 
 --Linear gradient function with respect to intercept
-gradIntLinear :: Num a => [a] -> [a] -> a
+gradIntLinear :: [Double] -> [Double] -> Double
 gradIntLinear params dataList = -2 * ((head dataList) - ((head params) + (sum (zipWith (*) (tail params) (tail dataList)))))
 
 --Linear gradient function with respect to slope
-gradSlopeLinear :: Num a => [a] -> [a] -> Int -> a
+gradSlopeLinear :: [Double] -> [Double] -> Int -> Double
 gradSlopeLinear params dataList var = -2 *
                                     ((head dataList) - (head params) - (sum (zipWith (*) (tail params) (tail dataList)))) *
                                     (dataList !! var)
