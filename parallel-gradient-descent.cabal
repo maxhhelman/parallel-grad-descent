@@ -46,6 +46,7 @@ executable parallel-gradient-descent-exe
   build-depends:
       base >=4.7 && <5
     , parallel-gradient-descent
+    , repa
   default-language: Haskell2010
 
 test-suite parallel-gradient-descent-test
