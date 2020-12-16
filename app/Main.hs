@@ -80,7 +80,7 @@ parMap f (a:as) = do
                     bs <- parMap f as
                     return (b:bs)
 
---Applies a fold to each column in the dataframe
+--Applies a fold (sum) to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
 specialMegaFold [] = error "specialMegaFold not long enough"
 specialMegaFold [x] = x
@@ -88,11 +88,13 @@ specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
 
+--Applies a fold (sum) to each column in the dataframe... in parallel :)
 parallelMegaFold :: [[Double]] -> [Double]
 parallelMegaFold [] = error "parallelMegaFold not long enough"
 parallelMegaFold [x] = x
 parallelMegaFold nested@(_:_:_) = parallelComputeSum nested
 
+--Compute sum in parallel
 parallelComputeSum :: [[Double]] -> [Double]
 parallelComputeSum nested@(_:_:_) = do
                     let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
@@ -104,6 +106,7 @@ parallelComputeSum nested@(_:_:_) = do
 parallelComputeSum [] = error "cannot compute sum"
 parallelComputeSum (_:_) = error "cannot compute sum"
 
+--Transpose a 2D array
 transpose2D :: (Source r e) => Array r DIM2 e -> Array D DIM2 e
 transpose2D a = backpermute (swap e) swap a
      where
