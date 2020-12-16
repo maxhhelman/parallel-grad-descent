@@ -4,7 +4,7 @@ module Main where
 import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
-import Data.List(isInfixOf, concat)
+import Data.List(isInfixOf)
 import Data.Array.Repa( Array, fromListUnboxed, backpermute, foldP, computeP, toList, D, U, Source, extent )
 import Data.Array.Repa.Index
 
@@ -45,14 +45,12 @@ main = do
 --            print $ descendTolerance csvData computeGradRowLogistic [0.0,0.0] (0.001) (0.0001)
 --            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
 
-
 --If we add more loss functions later, we could have this structure
 computeGradDecider :: Bool -> Bool -> ([Double] -> [Double] -> [Double])
 computeGradDecider linOutcome logOutcome
     | linOutcome = computeGradRowLinear
     | logOutcome = computeGradRowLogistic
     | otherwise = computeGradRowLogistic
-
 
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
 descendTolerance :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
@@ -82,28 +80,27 @@ specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
 
-
 parallelMegaFold :: [[Double]] -> [Double]
 parallelMegaFold [] = error "parallelMegaFold not long enough"
 parallelMegaFold [x] = x
-parallelMegaFold nested@(x:xs:xss) = parallelComputeSum nested
+parallelMegaFold nested@(_:_:_) = parallelComputeSum nested
 
 parallelComputeSum :: [[Double]] -> [Double]
-parallelComputeSum nested@(x:xs:xss) = do
+parallelComputeSum nested@(_:_:_) = do
                     let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
                     let xTranspose = transpose2D x
                     let [xNDTranspose] = computeP xTranspose :: [Array U DIM2 Double]
                     let mResult = foldP (+) 0 xNDTranspose
                     result <- mResult
                     toList result
-
+parallelComputeSum [] = error "cannot compute sum"
+parallelComputeSum (_:_) = error "cannot compute sum"
 
 transpose2D :: (Source r e) => Array r DIM2 e -> Array D DIM2 e
 transpose2D a = backpermute (swap e) swap a
      where
        e = extent a
        swap (Z :. i :. j) = Z :. j :. i
-
 
 --Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
 getCSVData :: FilePath -> IO [[Double]]
