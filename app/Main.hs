@@ -27,8 +27,8 @@ main = do
                         die $ "Usage: grad-descent <filename> <loss function: linear/logistic> <guess array>"
             csvData <- getCSVData (head input)
 
-            let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Line", "Linear", "line", "linear"])
-            let logMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Log", "Logistic", "log", "logistic"])
+            let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Linear", "linear", "LINEAR"])
+            let logMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Logistic", "logistic", "LOGISTIC"])
 
             appLoss <- case (linMatch || logMatch) of
                  True -> if linMatch then (return computeGradRowLinear) else (return computeGradRowLogistic)
