@@ -69,14 +69,7 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (parMap (gradFunc params) csvData)
-
---This function is from class, but it was an effective way to do a parallel map, and if it ain't broke, don't fix it
-parMap _ [] = return []
-parMap f (a:as) = do
-                    b <- rpar (f a)
-                    bs <- parMap f as
-                    return (b:bs)
+computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold ((map (gradFunc params) csvData) `using` parListChunk (1000) rseq)
 
 --Applies a fold (sum) to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
