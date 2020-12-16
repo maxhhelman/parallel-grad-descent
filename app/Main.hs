@@ -7,8 +7,6 @@ import System.Exit(die)
 import Data.List(isInfixOf)
 import Data.Array.Repa( Array, fromListUnboxed, backpermute, foldP, computeP, toList, D, U, Source, extent )
 import Data.Array.Repa.Index
-import Control.Parallel.Strategies
-import Control.Parallel
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -72,7 +70,7 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (parMap rpar (gradFunc params) csvData)
+computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (map (gradFunc params) csvData)
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
