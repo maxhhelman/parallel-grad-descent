@@ -10,15 +10,13 @@ import Data.Array.Repa.Index
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
-Description :  <optional short text displayed on contents page>
-Copyright   :  (c) <Authors or Affiliations>
-License     :  <license>
+Description :  Parallelized Gradient Descent algorithm for linear regression
+Copyright   :  (c) <Max Helman, Riya Chakraborty>
+License     :  BSD 3-Clause
 
-Maintainer  :  <email>
-Stability   :  unstable | experimental | provisional | stable | frozen
-Portability :  portable | non-portable (<reason>)
-
-<module description starting at first column>
+Maintainer  :  mhh2148@columbia.edu, rc3242@columbia.edu
+Stability   :  stable
+Portability :  portable
 -}
 
 main :: IO()
