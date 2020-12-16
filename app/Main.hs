@@ -98,7 +98,6 @@ parallelComputeSum nested@(_:_:_) = do
 parallelComputeSum [] = error "cannot compute sum"
 parallelComputeSum (_:_) = error "cannot compute sum"
 
-
 transpose2D :: (Source r e) => Array r DIM2 e -> Array D DIM2 e
 transpose2D a = backpermute (swap e) swap a
      where
