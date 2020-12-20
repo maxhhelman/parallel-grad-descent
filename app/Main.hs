@@ -4,7 +4,7 @@ import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
 import Data.List(isInfixOf)
-import Data.Array.Repa( Array, fromListUnboxed, backpermute, foldP, computeP, toList, D, U, Source, extent )
+import Data.Array.Repa( Array, fromListUnboxed, backpermute, foldP, computeS, computeP, toList, D, U, Source, extent )
 import Data.Array.Repa.Index
 
 {- |
@@ -38,7 +38,7 @@ main = do
             let guess = read (head $ tail $ tail input) :: [Double]
 
 --            print $ descendTolerance csvData computeGradRowLogistic [5.1,0.1,1.1] (0.00001) (0.001::Double)
-            print $ descendSteps csvData appLoss guess (10000::Int) (0.0000000001::Double)
+            print $ descendSteps csvData appLoss guess (1000::Int) (0.0000000000001::Double)
 --            print $ descendTolerance csvData computeGradRowLogistic [0.0,0.0] (0.001) (0.0001)
 --            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
 
@@ -88,7 +88,8 @@ parallelComputeSum :: [[Double]] -> [Double]
 parallelComputeSum nested@(_:_:_) = do
                     let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
                     let xTranspose = transpose2D x
-                    let [xNDTranspose] = computeP xTranspose :: [Array U DIM2 Double]
+--                    let [xNDTranspose] = computeP xTranspose :: [Array U DIM2 Double]
+                    let xNDTranspose = computeS xTranspose :: Array U DIM2 Double
                     let mResult = foldP (+) 0 xNDTranspose
                     result <- mResult
                     toList result
