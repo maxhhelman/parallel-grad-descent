@@ -1,6 +1,5 @@
 module Main where
 
--- to be created
 import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
@@ -29,8 +28,8 @@ main = do
                         die $ "Usage: grad-descent <filename> <loss function: linear/logistic> <guess array>"
             csvData <- getCSVData (head input)
 
-            let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Line", "Linear", "line", "linear"])
-            let logMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Log", "Logistic", "log", "logistic"])
+            let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Linear", "linear", "LINEAR"])
+            let logMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Logistic", "logistic", "LOGISTIC"])
 
             appLoss <- case (linMatch || logMatch) of
                  True -> if linMatch then (return computeGradRowLinear) else (return computeGradRowLogistic)
@@ -69,7 +68,7 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold ((map (gradFunc params) csvData) `using` parListChunk (1000) rseq)
+computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (map (gradFunc params) csvData)
 
 --Applies a fold (sum) to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
@@ -79,13 +78,12 @@ specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
 
---Applies a fold (sum) to each column in the dataframe... in parallel :)
+--Applies a fold to each column in the dataframe... in parallel
 parallelMegaFold :: [[Double]] -> [Double]
 parallelMegaFold [] = error "parallelMegaFold not long enough"
 parallelMegaFold [x] = x
 parallelMegaFold nested@(_:_:_) = parallelComputeSum nested
 
---Compute sum in parallel
 parallelComputeSum :: [[Double]] -> [Double]
 parallelComputeSum nested@(_:_:_) = do
                     let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
