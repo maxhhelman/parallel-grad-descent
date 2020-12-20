@@ -42,7 +42,7 @@ executable parallel-gradient-descent-exe
       Paths_parallel_gradient_descent
   hs-source-dirs:
       app
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -threaded -rtsopts -O2 -fllvm -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , parallel-gradient-descent
