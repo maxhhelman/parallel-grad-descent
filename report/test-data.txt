@@ -7,23 +7,3 @@ python data/datagen.py --functiontype linear --filename data/test-3.csv --slopes
 python data/datagen.py --functiontype linear --filename data/test-4.csv --slopes 1.0 2.0 --ints -5.0 4.0 --nrows 10000 --noisemag 0.5
 
 python data/datagen.py --functiontype linear --filename data/test-5.csv --slopes 1.0 2.0 --ints -5.0 4.0 --nrows 100000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-6.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 --ints -5.0 4.0 0.0 0.0 1.0 --nrows 10 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-7.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 --ints -5.0 4.0 0.0 0.0 1.0 --nrows 100 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-8.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 --ints -5.0 4.0 0.0 0.0 1.0 --nrows 1000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-9.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 --ints -5.0 4.0 0.0 0.0 1.0 --nrows 10000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-10.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 --ints -5.0 4.0 0.0 0.0 1.0 --nrows 100000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-11.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 1.0 1.0 1.0 1.0 1.0 --ints -5.0 4.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 --nrows 10 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-12.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 1.0 1.0 1.0 1.0 1.0 --ints -5.0 4.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 --nrows 100 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-13.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 1.0 1.0 1.0 1.0 1.0 --ints -5.0 4.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 --nrows 1000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-14.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 1.0 1.0 1.0 1.0 1.0 --ints -5.0 4.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 --nrows 10000 --noisemag 0.5
-
-python data/datagen.py --functiontype linear --filename data/test-15.csv --slopes 1.0 2.0 3.0 -2.0 -3.0 1.0 1.0 1.0 1.0 1.0 --ints -5.0 4.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 --nrows 100000 --noisemag 0.5
