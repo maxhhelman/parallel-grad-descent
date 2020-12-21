@@ -4,7 +4,7 @@
 
 Build: `stack build `   
 Run: `stack run <FILEPATH> <line/linear/Line/Linear> <GUESS>`  
-Run with Eventlog: `stack exec parallel-gradient-descent-exe data/test-4.csv linear [1,1] --RTS -- +RTS -ls -N8`  
+Run with Eventlog: `stack exec parallel-gradient-descent-exe <FILEPATH> <line/linear/Line/Linear> <GUESS> --RTS -- +RTS -ls -N<NUMBER OF CORES>`  
 Run Threadscope: `threadscope parallel-gradient-descent-exe.eventlog`  
 
 `---- e.g. stack run data/big-data-test.csv linear [0.0,0.0] `
