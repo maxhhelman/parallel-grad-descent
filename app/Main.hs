@@ -4,8 +4,8 @@ import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
 import Data.List(isInfixOf)
-import Data.Array.Repa( Array, fromListUnboxed, backpermute, foldP, computeP, toList, D, U, Source, extent )
-import Data.Array.Repa.Index
+import Data.List.Split
+import Control.Parallel.Strategies
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -67,40 +67,33 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) $ parallelMegaFold (map (gradFunc params) csvData)
+computeGrad csvData gradFunc params stepSize = map (* stepSize) (parallelMegaFold2 (map (gradFunc params) csvData))
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
-specialMegaFold [] = error "specialMegaFold not long enough"
+specialMegaFold [] = []
 specialMegaFold [x] = x
 specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
 
---Applies a fold to each column in the dataframe... in parallel
-parallelMegaFold :: [[Double]] -> [Double]
-parallelMegaFold [] = error "parallelMegaFold not long enough"
-parallelMegaFold [x] = x
-parallelMegaFold nested@(_:_:_) = parallelComputeSum nested
+parallelMegaFold [] = return []
+parallelMegaFold [x] = return x   
+parallelMegaFold (x:xs:[]) = return $ zipWith (+) x xs
+parallelMegaFold (x:xs:xss) = do
+                                x' <- rpar $ zipWith (+) x xs
+                                xs' <- parallelMegaFold xss
+                                return $ zipWith (+) x' xs'
 
---Computes sum... in parallel
-parallelComputeSum :: [[Double]] -> [Double]
-parallelComputeSum nested@(_:_:_) = do
-                    let x = fromListUnboxed (Z :. ((length nested)::Int) :. ((length $ (head nested))::Int) ) (concat nested)
-                    let xTranspose = transpose2D x
-                    let [xNDTranspose] = computeP xTranspose :: [Array U DIM2 Double]
-                    let mResult = foldP (+) 0 xNDTranspose
-                    result <- mResult
-                    toList result
-parallelComputeSum [] = error "cannot compute sum"
-parallelComputeSum (_:_) = error "cannot compute sum"
-
---Transpose a 2D array
-transpose2D :: (Source r e) => Array r DIM2 e -> Array D DIM2 e
-transpose2D a = backpermute (swap e) swap a
-     where
-       e = extent a
-       swap (Z :. i :. j) = Z :. j :. i
+parallelMegaFold2 [] = []
+parallelMegaFold2 [x] = x   
+parallelMegaFold2 (x:xs:[]) = zipWith (+) x xs
+parallelMegaFold2 xx@(x:xs:xss) = 
+                                    if length xx == 1 then
+                                        head xx
+                                    else parallelMegaFold2 $ parMap (rseq) specialMegaFold chunks
+                                    where
+                                        chunks = chunksOf ((length xx) `div` 2) xx
 
 --Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
 getCSVData :: FilePath -> IO [[Double]]
