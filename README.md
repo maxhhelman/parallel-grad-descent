@@ -2,8 +2,10 @@
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-Build (as of 12/13/20): `stack build `   
-Run (as of 12/13/20): `stack run <FILEPATH> <line/linear/Line/Linear> <GUESS>` 
+Build: `stack build `   
+Run: `stack run <FILEPATH> <line/linear/Line/Linear> <GUESS>` 
+Run with Eventlog: `stack exec parallel-gradient-descent-exe data/test-4.csv linear [1,1] --RTS -- +RTS -ls -N8`  
+Run Threadscope: `threadscope parallel-gradient-descent-exe.eventlog`  
 
 `---- e.g. stack run data/big-data-test.csv linear [0.0,0.0] `
 
