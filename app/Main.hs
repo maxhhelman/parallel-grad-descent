@@ -37,8 +37,8 @@ main = do
 
             let guess = read (head $ tail $ tail input) :: [Double]
 
---            print $ descendTolerance csvData computeGradRowLogistic [5.1,0.1,1.1] (0.00001) (0.001::Double)
-            print $ descendSteps csvData appLoss guess (10000::Int) (0.0000000001::Double)
+--            print $ descendTolerance csvData computeGsadRowLogistic [5.1,0.1,1.1] (0.00001) (0.001::Double)
+            print $ descendSteps csvData appLoss guess (1000::Int) (0.0000000001::Double)
 --            print $ descendTolerance csvData computeGradRowLogistic [0.0,0.0] (0.001) (0.0001)
 --            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
 
@@ -67,7 +67,7 @@ descendSteps csvData gradFunc guess steps stepSize
 
 --Compute the gradient
 computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) (parallelMegaFold2 (map (gradFunc params) csvData))
+computeGrad csvData gradFunc params stepSize = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData))
 
 --Applies a fold to each column in the dataframe
 specialMegaFold :: [[Double]] -> [Double]
@@ -77,23 +77,16 @@ specialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
     | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
 
-parallelMegaFold [] = return []
-parallelMegaFold [x] = return x   
-parallelMegaFold (x:xs:[]) = return $ zipWith (+) x xs
-parallelMegaFold (x:xs:xss) = do
-                                x' <- rpar $ zipWith (+) x xs
-                                xs' <- parallelMegaFold xss
-                                return $ zipWith (+) x' xs'
-
-parallelMegaFold2 [] = []
-parallelMegaFold2 [x] = x   
-parallelMegaFold2 (x:xs:[]) = zipWith (+) x xs
-parallelMegaFold2 xx@(x:xs:xss) = 
-                                    if length xx == 1 then
-                                        head xx
-                                    else parallelMegaFold2 $ parMap (rseq) specialMegaFold chunks
-                                    where
-                                        chunks = chunksOf ((length xx) `div` 2) xx
+parallelMegaFold :: [[Double]] -> [Double]
+parallelMegaFold [] = []
+parallelMegaFold [x] = x   
+parallelMegaFold (x:xs:[]) = zipWith (+) x xs
+parallelMegaFold x = 
+                    if length x == 1 then
+                        head x
+                    else specialMegaFold $ parMap (rdeepseq) specialMegaFold chunks
+                    where
+                        chunks = chunksOf ((length x) `div` 8) x
 
 --Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
 getCSVData :: FilePath -> IO [[Double]]
