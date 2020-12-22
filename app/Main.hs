@@ -70,13 +70,14 @@ computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Doub
 computeGrad csvData gradFunc params stepSize = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData))
 
 --Applies a fold to each column in the dataframe
-specialMegaFold :: [[Double]] -> [Double]
-specialMegaFold [] = []
-specialMegaFold [x] = x
-specialMegaFold xx@(x:xs:xss)
+sequentialMegaFold :: [[Double]] -> [Double]
+sequentialMegaFold [] = []
+sequentialMegaFold [x] = x
+sequentialMegaFold xx@(x:xs:xss)
     | (length xx) == 2 = zipWith (+) x xs
-    | otherwise = specialMegaFold ((zipWith (+) x xs):xss)
+    | otherwise = sequentialMegaFold ((zipWith (+) x xs):xss)
 
+--Parallel glue code
 parallelMegaFold :: [[Double]] -> [Double]
 parallelMegaFold [] = []
 parallelMegaFold [x] = x   
@@ -84,11 +85,11 @@ parallelMegaFold (x:xs:[]) = zipWith (+) x xs
 parallelMegaFold x = 
                     if length x == 1 then
                         head x
-                    else specialMegaFold $ parMap (rdeepseq) specialMegaFold chunks
+                    else sequentialMegaFold $ parMap (rdeepseq) sequentialMegaFold chunks
                     where
-                        chunks = chunksOf ((length x) `div` 8) x
+                        chunks = chunksOf ((length x) `div` 256) x
 
---Creates the 'dataframe' structure - feel free to change (O(n) lookup time is a problem)
+--Creates the 'dataframe' structure (list of lists)
 getCSVData :: FilePath -> IO [[Double]]
 getCSVData filename = do
                         lns <- fmap lines (readFile filename)
