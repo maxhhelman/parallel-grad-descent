@@ -4,8 +4,6 @@ import Grad
 import System.Environment(getArgs)
 import System.Exit(die)
 import Data.List(isInfixOf)
-import Data.List.Split
-import Control.Parallel.Strategies
 
 {- |
 Module      :  <File name or $Header$ to be replaced automatically>
@@ -22,9 +20,9 @@ main :: IO()
 main = do
             args <- getArgs
             input <- case args of
-                [f, method, guess] -> return [f, method, guess]
+                [f, method, guess, parseq] -> return [f, method, guess, parseq]
                 _ -> do
-                        die $ "Usage: grad-descent <filename> <loss function: linear/logistic> <guess array>"
+                        die $ "Usage: grad-descent <filename> <loss function: linear/logistic> <guess array> <parallel/sequential>"
             csvData <- getCSVData (head input)
 
             let linMatch = or $ map ($ (head $ tail input)) (map isInfixOf ["Linear", "linear", "LINEAR"])
@@ -36,9 +34,10 @@ main = do
                             die $ "Choose either Linear or Logistic loss functions"
 
             let guess = read (head $ tail $ tail input) :: [Double]
+            let choice = last input
 
 --            print $ descendTolerance csvData computeGsadRowLogistic [5.1,0.1,1.1] (0.00001) (0.001::Double)
-            print $ descendSteps csvData appLoss guess (1000::Int) (0.0000000001::Double)
+            print $ descendSteps choice csvData appLoss guess (1000::Int) (0.0000001::Double)
 --            print $ descendTolerance csvData computeGradRowLogistic [0.0,0.0] (0.001) (0.0001)
 --            print $ descendSteps csvData computeGradRowLogistic [0.0,0.0] (10000::Int) (0.001::Double)
 
@@ -49,55 +48,4 @@ computeGradDecider linOutcome logOutcome
     | logOutcome = computeGradRowLogistic
     | otherwise = computeGradRowLogistic
 
---Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
-descendTolerance :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
-descendTolerance csvData gradFunc guess tolerance stepSize
-    | tolerance < (0::Double) = error "tolerance must be a positive value"
-    | maxVal <= tolerance = guess
-    | otherwise = descendTolerance (csvData) gradFunc (zipWith (-) guess (computeGrad csvData gradFunc guess stepSize)) tolerance stepSize
-    where
-        maxVal = maximum $ map abs (computeGrad csvData gradFunc guess stepSize)
 
---Actual gradient descent algorithm (uses numer of steps as stopping condition)
-descendSteps :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Int -> Double -> [Double]
-descendSteps csvData gradFunc guess steps stepSize
-    | steps < 0 = error "you can't take negative steps"
-    | steps == 0 = guess
-    | otherwise = descendSteps (csvData) gradFunc (zipWith (-) guess (computeGrad csvData gradFunc guess stepSize)) (steps - 1) (stepSize)
-
---Compute the gradient
-computeGrad :: [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad csvData gradFunc params stepSize = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData))
-
---Applies a fold to each column in the dataframe
-sequentialMegaFold :: [[Double]] -> [Double]
-sequentialMegaFold [] = []
-sequentialMegaFold [x] = x
-sequentialMegaFold xx@(x:xs:xss)
-    | (length xx) == 2 = zipWith (+) x xs
-    | otherwise = sequentialMegaFold ((zipWith (+) x xs):xss)
-
---Parallel glue code
-parallelMegaFold :: [[Double]] -> [Double]
-parallelMegaFold [] = []
-parallelMegaFold [x] = x   
-parallelMegaFold (x:xs:[]) = zipWith (+) x xs
-parallelMegaFold x = 
-                    if length x == 1 then
-                        head x
-                    else sequentialMegaFold $ parMap (rdeepseq) sequentialMegaFold chunks
-                    where
-                        chunks = chunksOf ((length x) `div` 256) x
-
---Creates the 'dataframe' structure (list of lists)
-getCSVData :: FilePath -> IO [[Double]]
-getCSVData filename = do
-                        lns <- fmap lines (readFile filename)
-                        return $ map (map (\x -> read x::Double)) (map words (map rep (tail lns)))
-
---Preprocessing for CSV files (turns all commas into spaces so we can use words)
-rep :: [Char] -> [Char]
-rep [] = []
-rep (x:xs)
-    | x == ',' = [' '] ++ (rep xs)
-    | otherwise = [x] ++ (rep xs)
