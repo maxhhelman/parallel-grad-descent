@@ -1,12 +1,79 @@
-module Grad
-    ( computeGradRowLinear,
-      computeGradRowLinearHelper,
-      gradIntLinear,
-      gradSlopeLinear,
-      computeGradRowLogistic,
-      hTheta,
-      g
-    ) where
+module Grad where
+
+import Control.Parallel.Strategies
+import Data.List.Split
+
+
+-- FUNCTIONS FOR PROCESSING DATA INPUT
+
+--Creates the 'dataframe' structure (list of lists)
+getCSVData :: FilePath -> IO [[Double]]
+getCSVData filename = do
+                        lns <- fmap lines (readFile filename)
+                        return $ map (map (\x -> read x::Double)) (map words (map rep (tail lns)))
+
+--Preprocessing for CSV files (turns all commas into spaces so we can use words)
+rep :: [Char] -> [Char]
+rep [] = []
+rep (x:xs)
+    | x == ',' = [' '] ++ (rep xs)
+    | otherwise = [x] ++ (rep xs)
+
+
+
+
+
+-- FUNCTIONS FOR GRADIENT DESCENT ALGORITHM
+
+--Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
+descendTolerance :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
+descendTolerance parseq csvData gradFunc guess tolerance stepSize
+    | tolerance < (0::Double) = error "tolerance must be a positive value"
+    | maxVal <= tolerance = guess
+    | otherwise = descendTolerance parseq (csvData) gradFunc (zipWith (-) guess (computeGrad parseq csvData gradFunc guess stepSize)) tolerance stepSize
+    where
+        maxVal = maximum $ map abs (computeGrad parseq csvData gradFunc guess stepSize)
+
+--Actual gradient descent algorithm (uses numer of steps as stopping condition)
+descendSteps :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Int -> Double -> [Double]
+descendSteps parseq csvData gradFunc guess steps stepSize
+    | steps < 0 = error "you can't take negative steps"
+    | steps == 0 = guess
+    | otherwise = descendSteps parseq (csvData) gradFunc (zipWith (-) guess (computeGrad parseq csvData gradFunc guess stepSize)) (steps - 1) (stepSize)
+
+--Compute the gradient
+computeGrad :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
+computeGrad parseq csvData gradFunc params stepSize 
+    | parseq == "parallel" = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData))
+    | otherwise = map (* stepSize) (sequentialMegaFold (map (gradFunc params) csvData))
+
+
+--Applies a fold to each column in the dataframe
+sequentialMegaFold :: [[Double]] -> [Double]
+sequentialMegaFold [] = []
+sequentialMegaFold [x] = x
+sequentialMegaFold xx@(x:xs:xss)
+    | (length xx) == 2 = zipWith (+) x xs
+    | otherwise = sequentialMegaFold ((zipWith (+) x xs):xss)
+
+--Parallel glue code
+parallelMegaFold :: [[Double]] -> [Double]
+parallelMegaFold [] = []
+parallelMegaFold [x] = x
+parallelMegaFold (x:xs:[]) = zipWith (+) x xs
+parallelMegaFold x =
+                    if length x == 1 then
+                        head x
+                    else sequentialMegaFold $ parMap (rdeepseq) sequentialMegaFold chunks
+                    where
+                        chunks = chunksOf ((length x) `div` 64) x
+
+
+
+
+
+
+-- FUNCTIONS FOR GRADIENT COMPUTATION
 
 --Compute a row of gradient
 computeGradRowLinear :: [Double] -> [Double] -> [Double]
