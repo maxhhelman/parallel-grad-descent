@@ -26,25 +26,25 @@ rep (x:xs)
 -- FUNCTIONS FOR GRADIENT DESCENT ALGORITHM
 
 --Actual gradient descent algorithm (uses magnitude of gradient as stopping condition)
-descendTolerance :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
-descendTolerance parseq csvData gradFunc guess tolerance stepSize
+descendTolerance :: [Char] -> Int -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> Double -> [Double]
+descendTolerance parseq chunks csvData gradFunc guess tolerance stepSize
     | tolerance < (0::Double) = error "tolerance must be a positive value"
     | maxVal <= tolerance = guess
-    | otherwise = descendTolerance parseq (csvData) gradFunc (zipWith (-) guess (computeGrad parseq csvData gradFunc guess stepSize)) tolerance stepSize
+    | otherwise = descendTolerance parseq chunks (csvData) gradFunc (zipWith (-) guess (computeGrad parseq chunks csvData gradFunc guess stepSize)) tolerance stepSize
     where
-        maxVal = maximum $ map abs (computeGrad parseq csvData gradFunc guess stepSize)
+        maxVal = maximum $ map abs (computeGrad parseq chunks csvData gradFunc guess stepSize)
 
 --Actual gradient descent algorithm (uses numer of steps as stopping condition)
-descendSteps :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Int -> Double -> [Double]
-descendSteps parseq csvData gradFunc guess steps stepSize
+descendSteps :: [Char] -> Int -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Int -> Double -> [Double]
+descendSteps parseq chunks csvData gradFunc guess steps stepSize
     | steps < 0 = error "you can't take negative steps"
     | steps == 0 = guess
-    | otherwise = descendSteps parseq (csvData) gradFunc (zipWith (-) guess (computeGrad parseq csvData gradFunc guess stepSize)) (steps - 1) (stepSize)
+    | otherwise = descendSteps parseq chunks (csvData) gradFunc (zipWith (-) guess (computeGrad parseq chunks csvData gradFunc guess stepSize)) (steps - 1) (stepSize)
 
 --Compute the gradient
-computeGrad :: [Char] -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
-computeGrad parseq csvData gradFunc params stepSize 
-    | parseq == "parallel" = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData))
+computeGrad :: [Char] -> Int -> [a] -> ([Double] -> a -> [Double]) -> [Double] -> Double -> [Double]
+computeGrad parseq chunks csvData gradFunc params stepSize 
+    | parseq == "parallel" = map (* stepSize) (parallelMegaFold (map (gradFunc params) csvData) chunks)
     | otherwise = map (* stepSize) (sequentialMegaFold (map (gradFunc params) csvData))
 
 
@@ -57,16 +57,16 @@ sequentialMegaFold xx@(x:xs:xss)
     | otherwise = sequentialMegaFold ((zipWith (+) x xs):xss)
 
 --Parallel glue code
-parallelMegaFold :: [[Double]] -> [Double]
-parallelMegaFold [] = []
-parallelMegaFold [x] = x
-parallelMegaFold (x:xs:[]) = zipWith (+) x xs
-parallelMegaFold x =
+parallelMegaFold :: [[Double]] -> Int -> [Double]
+parallelMegaFold [] chunkNum = []
+parallelMegaFold [x] chunkNum = x
+parallelMegaFold (x:xs:[]) chunkNum = zipWith (+) x xs
+parallelMegaFold x chunkNum =
                     if length x == 1 then
                         head x
                     else sequentialMegaFold $ parMap (rdeepseq) sequentialMegaFold chunks
                     where
-                        chunks = chunksOf ((length x) `div` 64) x
+                        chunks = chunksOf ((length x) `div` chunkNum) x
 
 
 
