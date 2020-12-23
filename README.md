@@ -7,6 +7,7 @@ Project proposal, report, and slides located in report directory
 Build: `stack build `   
 Run: `stack run <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> <parallel/sequential>`  
 Example: `stack run data/big-data-test.csv linear [0.0,0.0] sequential`
+
 Test: `stack test`
 
 Run with Eventlog: `stack exec parallel-gradient-descent-exe <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> --RTS -- +RTS -ls -N<NUMBER OF CORES>`  
