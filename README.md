@@ -3,8 +3,8 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 Build: `stack build `   
-Run: `stack run <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS>`  
-`---- e.g. stack run data/big-data-test.csv linear [0.0,0.0] `
+Run: `stack run <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> <parallel/sequential>`  
+`---- e.g. stack run data/big-data-test.csv linear [0.0,0.0] sequential`
 
 Run with Eventlog: `stack exec parallel-gradient-descent-exe <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> --RTS -- +RTS -ls -N<NUMBER OF CORES>`  
 Install Threadscope: `stack install threadscope`  
