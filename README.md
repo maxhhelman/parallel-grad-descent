@@ -5,7 +5,7 @@
 Project proposal, report, and slides located in report directory  
 
 Build: `stack build `   
-Run: `stack run <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> <parallel/sequential>`  
+Run: `stack run <FILEPATH> <linear/Linear/Linear/logistic/Logistic/LOGISTIC> <GUESS> <parallel/sequential> <number of chunks>`  
 Example (Par): `stack run data/big-data-test.csv linear [0.0,0.0] parallel 256`
 
 Test: `stack test`
